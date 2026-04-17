@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>ActAs</title>
+
+<style>
+body {
+  font-family: sans-serif;
+  background: #0f172a;
+  color: white;
+  text-align: center;
+  padding: 20px;
+}
+.card {
+  background: #1e293b;
+  border-radius: 20px;
+  padding: 20px;
+  margin: 20px auto;
+  max-width: 350px;
+}
+button {
+  padding: 10px;
+  margin: 5px;
+  border-radius: 10px;
+  border: none;
+}
+.primary { background: blue; color: white; }
+.danger { background: red; color: white; }
+.success { background: green; color: white; }
+.hidden { display: none; }
+</style>
+</head>
+
+<body>
+
+<h1>ActAs</h1>
+
+<div class="card" id="setup">
+  <input id="friendName" placeholder="친구 이름">
+  <br>
+  <button class="primary" onclick="start()">시작</button>
+</div>
+
+<div class="card hidden" id="roleBox">
+  <button onclick="selectRole()">자기관리</button>
+  <button onclick="selectRole()">공부</button>
+</div>
+
+<div class="card hidden" id="missionBox">
+  <p id="missionText"></p>
+  <h2 id="timer">10</h2>
+  <button class="success" onclick="completeMission()">성공</button>
+  <button class="danger" onclick="failMission()">실패</button>
+</div>
+
+<div class="card hidden" id="resultBox">
+  <h3 id="resultText"></h3>
+  <p id="penaltyText"></p>
+  <button onclick="nextMission()">다음</button>
+</div>
+
+<script>
+let friend = "";
+let timer;
+let timeLeft = 10;
+let penalty = 0;
+
+const missions = ["폰 내려놔", "물 마셔", "집중 5분"];
+
+function start() {
+  friend = document.getElementById("friendName").value || "친구";
+  document.getElementById("setup").classList.add("hidden");
+  document.getElementById("roleBox").classList.remove("hidden");
+}
+
+function selectRole() {
+  document.getElementById("roleBox").classList.add("hidden");
+  document.getElementById("missionBox").classList.remove("hidden");
+  startMission();
+}
+
+function startMission() {
+  const mission = missions[Math.floor(Math.random()*missions.length)];
+  document.getElementById("missionText").innerText = mission;
+
+  timeLeft = 10;
+  document.getElementById("timer").innerText = timeLeft;
+
+  timer = setInterval(() => {
+    timeLeft--;
+    document.getElementById("timer").innerText = timeLeft;
+
+    if(timeLeft <= 0){
+      clearInterval(timer);
+      failMission();
+    }
+  }, 1000);
+}
+
+function completeMission(){
+  clearInterval(timer);
+  showResult("성공!");
+}
+
+function failMission(){
+  clearInterval(timer);
+  penalty += 1000;
+  showResult("실패", friend + "에게 1000원 (총 " + penalty + ")");
+}
+
+function showResult(text, p=""){
+  document.getElementById("missionBox").classList.add("hidden");
+  document.getElementById("resultBox").classList.remove("hidden");
+  document.getElementById("resultText").innerText = text;
+  document.getElementById("penaltyText").innerText = p;
+}
+
+function nextMission(){
+  document.getElementById("resultBox").classList.add("hidden");
+  document.getElementById("missionBox").classList.remove("hidden");
+  startMission();
+}
+</script>
+
+</body>
+</html>
