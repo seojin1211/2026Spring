@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reality Check - SNS 분석 앱</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #0f172a;
+      color: white;
+    }
+
+    .container {
+      max-width: 420px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    h1 {
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+
+    .card {
+      background: #1e293b;
+      border-radius: 20px;
+      padding: 16px;
+      margin-top: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+
+    input, button {
+      width: 100%;
+      padding: 12px;
+      border-radius: 12px;
+      border: none;
+      margin-top: 10px;
+      font-size: 14px;
+    }
+
+    input {
+      background: #334155;
+      color: white;
+    }
+
+    button {
+      background: linear-gradient(135deg, #ef4444, #8b5cf6);
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .result {
+      margin-top: 20px;
+    }
+
+    .score {
+      font-size: 32px;
+      font-weight: bold;
+    }
+
+    .low { color: #3b82f6; }
+    .mid { color: #a855f7; }
+    .high { color: #ef4444; }
+
+    .bar {
+      height: 10px;
+      background: #334155;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    .bar-fill {
+      height: 100%;
+      background: linear-gradient(to right, #3b82f6, #ef4444);
+    }
+
+    .analysis-item {
+      margin-top: 10px;
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    .reality-btn {
+      margin-top: 15px;
+      background: #22c55e;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔍 Reality Check</h1>
+    <p>SNS 게시물의 '연출 정도'를 분석합니다</p>
+
+    <div class="card">
+      <input type="text" id="input" placeholder="링크 또는 설명 입력..." />
+      <button onclick="analyze()">분석하기</button>
+    </div>
+
+    <div id="result" class="card result hidden">
+      <div class="score" id="score"></div>
+      <div class="bar"><div id="bar" class="bar-fill"></div></div>
+
+      <div class="analysis-item" id="photo"></div>
+      <div class="analysis-item" id="text"></div>
+      <div class="analysis-item" id="lifestyle"></div>
+
+      <button class="reality-btn" onclick="showReality()">현실 버전 보기</button>
+
+      <div id="reality" class="hidden">
+        <div class="analysis-item">📸 촬영: 여러 장 중 선택된 사진일 가능성 높음</div>
+        <div class="analysis-item">💭 감정: 실제보다 긍정적으로 표현됐을 가능성</div>
+        <div class="analysis-item">📢 광고: 협찬 포함 가능성 있음</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function analyze() {
+      const score = Math.floor(Math.random() * 100);
+      const resultDiv = document.getElementById('result');
+      const scoreText = document.getElementById('score');
+      const bar = document.getElementById('bar');
+
+      resultDiv.classList.remove('hidden');
+
+      scoreText.innerText = `진짜 지수: ${score}%`;
+      bar.style.width = score + '%';
+
+      if (score < 40) scoreText.className = 'score low';
+      else if (score < 70) scoreText.className = 'score mid';
+      else scoreText.className = 'score high';
+
+      document.getElementById('photo').innerText = '📸 사진: 보정 및 연출 가능성 있음';
+      document.getElementById('text').innerText = '💬 문장: 과시형 표현 감지됨';
+      document.getElementById('lifestyle').innerText = '📍 라이프스타일: 비현실적 패턴 감지';
+    }
+
+    function showReality() {
+      document.getElementById('reality').classList.remove('hidden');
+    }
+  </script>
+</body>
+</html>
