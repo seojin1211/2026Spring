@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reality Check Pro</title>
+<style>
+body{margin:0;font-family:-apple-system, BlinkMacSystemFont, sans-serif;background:#f2f2f7;color:#111}
+.container{max-width:420px;margin:auto;padding:20px}
+.card{backdrop-filter:blur(20px);background:rgba(255,255,255,0.6);border-radius:24px;padding:16px;margin-top:16px;box-shadow:0 10px 30px rgba(0,0,0,0.1)}
+input,button{width:100%;padding:12px;border-radius:14px;border:none;margin-top:10px;font-size:14px}
+input{background:#e5e7eb}
+button{background:#000;color:#fff;font-weight:bold}
+canvas{width:100%;border-radius:16px;margin-top:10px}
+.bar{height:8px;border-radius:10px;background:#ddd;margin-top:6px;overflow:hidden}
+.fill{height:100%;background:linear-gradient(90deg,#ff4d6d,#c77dff,#ff9f1c);width:0%}
+.label{font-size:13px;margin-top:8px}
+.center{text-align:center}
+.hidden{display:none}
+</style>
+</head>
+<body>
+
+<div id="onboarding" class="container center">
+  <h1>SNS Exaggeration Analyzer</h1>
+  <button onclick="startApp()">시작하기</button>
+</div>
+
+<div id="app" class="container hidden">
+
+<div class="card">
+<input type="file" id="imageInput" accept="image/*">
+<canvas id="canvas"></canvas>
+<button onclick="analyzeImage()">이미지 분석</button>
+<div id="imageStats"></div>
+</div>
+
+<div class="card">
+<input type="text" id="textInput" placeholder="아이디 입력">
+<button onclick="analyzeText()">계정 분석</button>
+<div id="textStats"></div>
+</div>
+
+<div class="card">
+<h3>종합 분석</h3>
+<div id="profileStats"></div>
+<div id="warning" style="margin-top:10px;font-weight:bold"></div>
+</div>
+
+<div class="center" style="margin-top:20px;font-weight:bold">불필요한 비교에서 벗어나세요!</div>
+
+</div>
+
+<script>
+function startApp(){
+  document.getElementById('onboarding').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+}
+
+const canvas=document.getElementById('canvas');
+const ctx=canvas.getContext('2d');
+let img=new Image();
+
+document.getElementById('imageInput').addEventListener('change',function(e){
+  const reader=new FileReader();
+  reader.onload=function(event){
+    img.onload=function(){
+      canvas.width=img.width;
+      canvas.height=img.height;
+      ctx.drawImage(img,0,0);
+    }
+    img.src=event.target.result;
+  }
+  reader.readAsDataURL(e.target.files[0]);
+});
+
+function drawBlur(x,y,size,intensity){
+  let gradient=ctx.createRadialGradient(x,y,10,x,y,size);
+  gradient.addColorStop(0,`rgba(255,0,0,${intensity})`);
+  gradient.addColorStop(1,'rgba(255,0,0,0)');
+  ctx.fillStyle=gradient;
+  ctx.beginPath();
+  ctx.arc(x,y,size,0,Math.PI*2);
+  ctx.fill();
+}
+
+function analyzeImage(){
+  let cx=canvas.width/2;
+  let cy=canvas.height/2;
+
+  for(let i=0;i<10;i++){
+    let offsetX=(Math.random()-0.5)*200;
+    let offsetY=(Math.random()-0.5)*200;
+    let size=Math.random()*120+40;
+    let intensity=Math.random()*0.8+0.2;
+    drawBlur(cx+offsetX,cy+offsetY,size,intensity);
+  }
+
+  generateBars('imageStats',['색감 보정','연출된 표정','구도 연출','필터 사용']);
+}
+
+function generateBars(target,labels){
+  let container=document.getElementById(target);
+  container.innerHTML='';
+
+  labels.forEach(label=>{
+    let val=Math.random()*100;
+
+    let wrapper=document.createElement('div');
+    let text=document.createElement('div');
+    text.className='label';
+    text.innerText=`${label} 0%`;
+
+    let bar=document.createElement('div');
+    bar.className='bar';
+    let fill=document.createElement('div');
+    fill.className='fill';
+
+    bar.appendChild(fill);
+    wrapper.appendChild(text);
+    wrapper.appendChild(bar);
+    container.appendChild(wrapper);
+
+    let current=0;
+    let interval=setInterval(()=>{
+      current+=2;
+      if(current>=val){
+        current=val;
+        clearInterval(interval);
+      }
+      fill.style.width=current+'%';
+      text.innerText=`${label} ${Math.floor(current)}%`;
+    },20);
+  });
+}
+
+function analyzeText(){
+  generateBars('textStats',['AI 사용','과장 문장','광고성 표현','감정 과장']);
+
+  setTimeout(()=>{
+    generateProfile();
+  },1500);
+}
+
+function generateProfile(){
+  let exaggeration=Math.random()*100;
+
+  generateBars('profileStats',['사치','과시','여행 빈도','가짜 여유로움','과장도']);
+
+  setTimeout(()=>{
+    let warning='';
+    if(exaggeration>70){
+      warning='⚠️ 비교 스트레스 위험 높은 계정';
+    }else if(exaggeration>40){
+      warning='주의: 일부 과장된 콘텐츠 포함';
+    }else{
+      warning='안정: 비교 영향 낮음';
+    }
+    document.getElementById('warning').innerText=warning;
+  },2000);
+}
+</script>
+</body>
+</html>
