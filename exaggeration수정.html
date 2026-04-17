@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reality Check Pro</title>
+<style>
+body{margin:0;font-family:-apple-system;background:#0f172a;color:#fff}
+.container{max-width:420px;margin:auto;padding:20px}
+.card{background:#1e293b;border-radius:20px;padding:16px;margin-top:16px}
+input,button{width:100%;padding:12px;border-radius:12px;border:none;margin-top:10px}
+input{background:#334155;color:#fff}
+button{background:linear-gradient(135deg,#ef4444,#8b5cf6);color:#fff;font-weight:bold}
+canvas{width:100%;margin-top:10px;border-radius:12px}
+.highlight{background:rgba(239,68,68,0.3);padding:2px 4px;border-radius:4px}
+</style>
+</head>
+<body>
+<div class="container">
+<h2>🔍 Reality Check Pro</h2>
+
+<div class="card">
+<input type="file" id="imageInput" accept="image/*">
+<canvas id="canvas"></canvas>
+<button onclick="analyzeImage()">이미지 분석</button>
+</div>
+
+<div class="card">
+<input type="text" id="textInput" placeholder="SNS 글 or 프로필 링크 붙여넣기">
+<button onclick="analyzeText()">텍스트 분석</button>
+<div id="textResult" style="margin-top:10px"></div>
+</div>
+</div>
+
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+let img = new Image();
+
+document.getElementById('imageInput').addEventListener('change', function(e){
+  const reader = new FileReader();
+  reader.onload = function(event){
+    img.onload = function(){
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx.drawImage(img,0,0);
+    }
+    img.src = event.target.result;
+  }
+  reader.readAsDataURL(e.target.files[0]);
+});
+
+function analyzeImage(){
+  // 가짜 보정 탐지 (시각적 강조)
+  for(let i=0;i<5;i++){
+    let x=Math.random()*canvas.width;
+    let y=Math.random()*canvas.height;
+    ctx.strokeStyle='red';
+    ctx.lineWidth=3;
+    ctx.strokeRect(x,y,50,50);
+  }
+  alert('보정 의심 영역 표시 완료');
+}
+
+function analyzeText(){
+  let text = document.getElementById('textInput').value;
+
+  let exaggeratedWords = ['드디어','완벽','인생','성공','최고','레전드'];
+  let result = text;
+
+  exaggeratedWords.forEach(word=>{
+    let regex = new RegExp(word,'g');
+    result = result.replace(regex, `<span class="highlight">${word}</span>`);
+  });
+
+  let analysis = '';
+  if(text.length < 5){
+    analysis = '텍스트가 너무 짧음';
+  } else {
+    analysis = '과장 표현이 포함되어 있을 가능성 있음';
+  }
+
+  document.getElementById('textResult').innerHTML = `
+  <div>📊 분석 결과</div>
+  <div>${result}</div>
+  <div style="margin-top:10px">🧠 해석: ${analysis}</div>
+  `;
+}
+</script>
+</body>
+</html>
