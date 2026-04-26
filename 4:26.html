@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reality Check Pro</title>
+<style>
+:root {
+    --primary: #ff4d6d;
+    --secondary: #c77dff;
+    --accent: #ff9f1c;
+    --bg: #f2f2f7;
+    --glass: rgba(255, 255, 255, 0.7);
+}
+
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: #1c1c1e;
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+}
+
+.iphone-container {
+    width: 100%;
+    max-width: 420px;
+    background: var(--bg);
+    min-height: 100vh;
+    position: relative;
+    padding-bottom: 80px;
+}
+
+/* Onboarding */
+.onboarding {
+    padding: 40px 20px;
+    text-align: center;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    height: 100vh;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* Tabs Navigation */
+.tab-nav {
+    display: flex;
+    background: rgba(200, 200, 200, 0.2);
+    border-radius: 12px;
+    padding: 4px;
+    margin: 20px;
+    backdrop-filter: blur(10px);
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    background: none;
+    font-size: 13px;
+    font-weight: 600;
+    color: #8e8e93;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: 0.3s;
+}
+
+.tab-btn.active {
+    background: white;
+    color: black;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* Cards */
+.card {
+    backdrop-filter: blur(25px);
+    background: var(--glass);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 24px;
+    padding: 20px;
+    margin: 0 20px 20px 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+}
+
+h2 { font-size: 1.2rem; margin-top: 0; }
+
+input[type="file"] { display: none; }
+.custom-file-upload {
+    display: block;
+    padding: 20px;
+    border: 2px dashed #ccc;
+    border-radius: 16px;
+    text-align: center;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+
+input[type="text"] {
+    width: calc(100% - 24px);
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid #ddd;
+    background: white;
+    margin-bottom: 10px;
+}
+
+button.main-btn {
+    width: 100%;
+    padding: 15px;
+    border-radius: 16px;
+    border: none;
+    background: #000;
+    color: #fff;
+    font-weight: bold;
+    font-size: 15px;
+    cursor: pointer;
+    transition: transform 0.1s;
+}
+
+button.main-btn:active { transform: scale(0.98); }
+
+canvas {
+    width: 100%;
+    border-radius: 16px;
+    display: none;
+    margin-bottom: 15px;
+}
+
+/* Progress Bars */
+.bar-container { margin-top: 15px; }
+.label-group {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+    font-size: 12px;
+    font-weight: 500;
+}
+.bar {
+    height: 6px;
+    border-radius: 10px;
+    background: rgba(0,0,0,0.05);
+    overflow: hidden;
+    margin-bottom: 12px;
+}
+.fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
+    width: 0%;
+    transition: width 1s cubic-bezier(0.1, 0.5, 0.5, 1);
+}
+
+.hidden { display: none; }
+.center { text-align: center; }
+
+#warning {
+    padding: 15px;
+    border-radius: 12px;
+    text-align: center;
+    margin-top: 15px;
+}
+</style>
+</head>
+<body>
+
+<div id="onboarding" class="onboarding">
+    <h1>Reality Check Pro</h1>
+    <p>SNS 속 과장된 삶과 실제의 간극을<br>AI 데이터로 정밀 분석합니다.</p>
+    <button class="main-btn" style="background:white; color:black; margin-top:30px;" onclick="startApp()">시작하기</button>
+</div>
+
+<div id="app" class="iphone-container hidden">
+    <div class="tab-nav">
+        <button class="tab-btn active" onclick="showTab('media')">미디어 분석</button>
+        <button class="tab-btn" onclick="showTab('account')">계정 분석</button>
+        <button class="tab-btn" onclick="showTab('report')">종합 리포트</button>
+    </div>
+
+    <div id="tab-media" class="tab-content">
+        <div class="card">
+            <h2>이미지 정밀 스캔</h2>
+            <label for="imageInput" class="custom-file-upload">📸 분석할 사진 업로드</label>
+            <input type="file" id="imageInput" accept="image/*">
+            <canvas id="canvas"></canvas>
+            <button class="main-btn" onclick="analyzeImage()">AI 픽셀 분석 시작</button>
+            <div id="imageStats" class="bar-container"></div>
+        </div>
+    </div>
+
+    <div id="tab-account" class="tab-content hidden">
+        <div class="card">
+            <h2>프로필 텍스트 마이닝</h2>
+            <input type="text" id="textInput" placeholder="@인스타그램 아이디 입력">
+            <button class="main-btn" onclick="analyzeText()">언어 패턴 분석</button>
+            <div id="textStats" class="bar-container"></div>
+        </div>
+    </div>
+
+    <div id="tab-report" class="tab-content hidden">
+        <div class="card">
+            <h2>최종 분석 결과 보고서</h2>
+            <div id="profileStats" class="bar-container">
+                <p style="text-align:center; color:#888;">먼저 분석을 진행해주세요.</p>
+            </div>
+            <div id="warning"></div>
+        </div>
+    </div>
+
+    <div class="center" style="padding: 20px; font-size: 12px; color: #8e8e93;">
+        현실의 당신은 이미지보다 훨씬 가치 있습니다.
+    </div>
+</div>
+
+<script>
+function startApp(){
+    document.getElementById('onboarding').classList.add('hidden');
+    document.getElementById('app').classList.remove('hidden');
+}
+
+function showTab(tabName) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    
+    document.getElementById('tab-' + tabName).classList.remove('hidden');
+    event.currentTarget.classList.add('active');
+}
+
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+let img = new Image();
+
+document.getElementById('imageInput').addEventListener('change', function(e){
+    const reader = new FileReader();
+    reader.onload = function(event){
+        img.onload = function(){
+            canvas.style.display = 'block';
+            const scale = canvas.offsetWidth / img.width;
+            canvas.width = canvas.offsetWidth;
+            canvas.height = img.height * scale;
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        }
+        img.src = event.target.result;
+    }
+    reader.readAsDataURL(e.target.files[0]);
+});
+
+function analyzeImage(){
+    if(!img.src) return alert('이미지를 먼저 업로드하세요!');
+    
+    // 단순한 시각 효과 (붉은색 포인트들)
+    for(let i=0; i<15; i++){
+        let x = Math.random() * canvas.width;
+        let y = Math.random() * canvas.height;
+        ctx.fillStyle = 'rgba(255, 77, 109, 0.5)';
+        ctx.beginPath();
+        ctx.arc(x, y, 20, 0, Math.PI*2);
+        ctx.fill();
+    }
+
+    generateBars('imageStats', ['색감 보정률', '얼굴 왜곡도', '구도 연출성', '필터 밀도']);
+}
+
+function analyzeText(){
+    const id = document.getElementById('textInput').value;
+    if(!id) return alert('아이디를 입력하세요!');
+    generateBars('textStats', ['키워드 과장', '광고 빈도', '감정 작위성', '허구적 표현']);
+    
+    // 분석 후 리포트 미리 생성
+    setTimeout(generateProfile, 1000);
+}
+
+function generateBars(target, labels){
+    let container = document.getElementById(target);
+    container.innerHTML = '';
+
+    labels.forEach(label => {
+        let val = Math.random() * 100;
+        let wrapper = document.createElement('div');
+        wrapper.innerHTML = `
+            <div class="label-group">
+                <span>${label}</span>
+                <span id="val-${label}">0%</span>
+            </div>
+            <div class="bar"><div class="fill" style="width:0%"></div></div>
+        `;
+        container.appendChild(wrapper);
+
+        setTimeout(() => {
+            wrapper.querySelector('.fill').style.width = val + '%';
+            wrapper.querySelector(`#val-${label}`).innerText = Math.floor(val) + '%';
+        }, 100);
+    });
+}
+
+function generateProfile(){
+    const reportContainer = document.getElementById('profileStats');
+    reportContainer.innerHTML = '';
+    
+    let exaggeration = Math.random() * 100;
+    generateBars('profileStats', ['경제적 과시', '여행 연출도', '가짜 여유', '종합 과장 지수']);
+
+    setTimeout(() => {
+        let warning = document.getElementById('warning');
+        if(exaggeration > 70){
+            warning.innerText = '⚠️ 심리적 거리두기 필요 (고위험)';
+            warning.style.background = '#ffe5e5';
+            warning.style.color = '#ff4d6d';
+        } else if(exaggeration > 40){
+            warning.innerText = '주의: 편집된 일상이 포함됨';
+            warning.style.background = '#fff4e5';
+            warning.style.color = '#ff9f1c';
+        } else {
+            warning.innerText = '✅ 건강한 SNS 소통 계정';
+            warning.style.background = '#e5f9f0';
+            warning.style.color = '#2ecc71';
+        }
+    }, 1200);
+}
+</script>
+</body>
+</html>
