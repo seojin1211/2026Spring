@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reality Check Pro v2.2</title>
+<style>
+:root {
+    --primary: #ff4d6d;
+    --secondary: #c77dff;
+    --accent: #ff9f1c;
+    --bg: #f2f2f7;
+    --glass: rgba(255, 255, 255, 0.85);
+    --dark: #1c1c1e;
+}
+
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif;
+    background: var(--bg);
+    color: var(--dark);
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Onboarding */
+.onboarding {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; z-index: 1000;
+    text-align: center; padding: 20px; transition: 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* App Container */
+.app-container { max-width: 430px; margin: 0 auto; min-height: 100vh; position: relative; }
+
+/* Tabs - 컬러 막대 완전 제거 및 심플한 디자인 */
+.tab-nav {
+    display: flex; background: rgba(0,0,0,0.05); border-radius: 14px;
+    margin: 20px; padding: 4px; position: sticky; top: 20px; z-index: 100;
+    backdrop-filter: blur(15px); border: none; /* 막대기 제거 */
+}
+.tab-btn {
+    flex: 1; border: none; padding: 12px; border-radius: 10px;
+    font-weight: 700; color: #8e8e93; background: none; cursor: pointer; transition: 0.2s;
+}
+.tab-btn.active { background: white; color: var(--dark); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+
+/* Card Style */
+.card {
+    background: var(--glass); backdrop-filter: blur(20px);
+    border-radius: 24px; padding: 24px; margin: 0 20px 20px;
+    border: 1px solid rgba(255,255,255,0.4); box-shadow: 0 8px 32px rgba(0,0,0,0.03);
+}
+
+/* Scanner */
+.scanner-view { position: relative; width: 100%; border-radius: 16px; overflow: hidden; margin: 15px 0; background: #000; display: none; }
+canvas { width: 100%; display: block; }
+.scan-line {
+    position: absolute; top: 0; left: 0; width: 100%; height: 2px;
+    background: var(--primary); box-shadow: 0 0 15px var(--primary);
+    display: none; animation: scan 2s linear infinite;
+}
+@keyframes scan { from { top: 0; } to { top: 100%; } }
+
+/* Metadata Box */
+.metadata-box {
+    background: #000; color: #00ff41; font-family: 'Courier New', Courier, monospace;
+    font-size: 11px; padding: 12px; border-radius: 12px; margin-top: 10px; display: none;
+    border: 1px solid #333; line-height: 1.6;
+}
+
+/* Progress Bars - 4개 동시 애니메이션용 */
+.bar-container { margin-top: 24px; }
+.label-group { display: flex; justify-content: space-between; font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+.bar-bg { height: 6px; background: rgba(0,0,0,0.05); border-radius: 10px; overflow: hidden; margin-bottom: 16px; }
+.bar-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--secondary)); width: 0%; border-radius: 10px; }
+
+/* Buttons */
+.btn-main {
+    width: 100%; padding: 16px; border-radius: 16px; border: none;
+    background: var(--dark); color: white; font-weight: 700; font-size: 16px;
+    cursor: pointer; transition: 0.2s;
+}
+.btn-main:active { transform: scale(0.97); opacity: 0.9; }
+
+.hidden { display: none; }
+
+#prescriptionBox {
+    background: white; border-left: 4px solid var(--primary); padding: 16px;
+    border-radius: 12px; margin-top: 20px; display: none; font-size: 14px;
+}
+</style>
+</head>
+<body>
+
+<div id="onboarding" class="onboarding">
+    <h1 style="font-size: 2.4rem; margin: 0 0 10px;">Reality Check<br><span style="font-weight: 200;">Forensic Pro</span></h1>
+    <p style="opacity: 0.9; font-size: 15px;">보정된 일상에 가려진<br>진짜 현실을 데이터로 포착합니다.</p>
+    <button class="btn-main" style="background:white; color:black; width:180px; margin-top:32px;" onclick="closeOnboarding()">시작하기</button>
+</div>
+
+<div class="app-container">
+    <nav class="tab-nav">
+        <button class="tab-btn active" onclick="switchTab('media', this)">미디어 포렌식</button>
+        <button class="tab-btn" onclick="switchTab('account', this)">계정 마이닝</button>
+        <button class="tab-btn" onclick="switchTab('report', this)">심리 리포트</button>
+    </nav>
+
+    <section id="tab-media" class="tab-content">
+        <div class="card">
+            <h3 style="margin:0 0 8px;">픽셀 변형률 추적</h3>
+            <p style="font-size: 13px; color: #666; margin-bottom: 20px;">사진의 메타데이터와 얼굴 주변 픽셀 왜곡을 감지합니다.</p>
+            
+            <label for="imageInput" style="display:block; padding:32px; border:2px dashed #d1d1d6; border-radius:18px; text-align:center; cursor:pointer; color:#8e8e93;">
+                📸 분석할 사진 업로드
+            </label>
+            <input type="file" id="imageInput" accept="image/*" class="hidden">
+            
+            <div id="scannerView" class="scanner-view">
+                <canvas id="mainCanvas"></canvas>
+                <div id="scanLine" class="scan-line"></div>
+            </div>
+
+            <div id="metadataBox" class="metadata-box"></div>
+            <button class="btn-main" style="margin-top:16px" onclick="runForensic()">포렌식 분석 시작</button>
+            <div id="imageResults" class="bar-container"></div>
+        </div>
+    </section>
+
+    <section id="tab-account" class="tab-content hidden">
+        <div class="card">
+            <h3 style="margin:0 0 8px;">언어 작위성 분석</h3>
+            <input type="text" id="username" placeholder="@아이디 입력" style="width:calc(100% - 24px); padding:14px; border-radius:12px; border:1.5px solid #eee; margin: 10px 0 16px; font-size:15px;">
+            <button class="btn-main" onclick="runAccountMining()">데이터 마이닝 시작</button>
+            <div id="accountResults" class="bar-container"></div>
+        </div>
+    </section>
+
+    <section id="tab-report" class="tab-content hidden">
+        <div class="card">
+            <h3 style="margin:0 0 8px;">디지털 웰빙 처방전</h3>
+            <div id="finalScoreArea" style="text-align:center; padding:30px 0;">
+                <p style="color:#8e8e93">분석 데이터가 존재하지 않습니다.</p>
+            </div>
+            <div id="prescriptionBox"></div>
+        </div>
+    </section>
+</div>
+
+<script>
+// Tab Logic
+function closeOnboarding() { document.getElementById('onboarding').style.transform = 'translateY(-100%)'; }
+function switchTab(tabId, btn) {
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + tabId).classList.remove('hidden');
+    btn.classList.add('active');
+}
+
+// Canvas Forensic
+const canvas = document.getElementById('mainCanvas');
+const ctx = canvas.getContext('2d');
+let currentImg = null;
+
+document.getElementById('imageInput').addEventListener('change', function(e) {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+        currentImg = new Image();
+        currentImg.onload = () => {
+            const view = document.getElementById('scannerView');
+            view.style.display = 'block';
+            canvas.width = view.offsetWidth;
+            canvas.height = currentImg.height * (view.offsetWidth / currentImg.width);
+            ctx.drawImage(currentImg, 0, 0, canvas.width, canvas.height);
+        };
+        currentImg.src = event.target.result;
+    };
+    reader.readAsDataURL(e.target.files[0]);
+});
+
+function drawForensicHighlights() {
+    let cx = canvas.width / 2;
+    let cy = canvas.height * 0.4; // 얼굴 추정 높이
+    for(let i=0; i<12; i++) {
+        let ox = (Math.random() - 0.5) * (canvas.width * 0.5);
+        let oy = (Math.random() - 0.5) * (canvas.height * 0.4);
+        let radius = Math.random() * 80 + 40;
+        let grad = ctx.createRadialGradient(cx+ox, cy+oy, 5, cx+ox, cy+oy, radius);
+        grad.addColorStop(0, `rgba(255, 0, 77, 0.4)`);
+        grad.addColorStop(1, 'rgba(255, 0, 77, 0)');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(cx+ox, cy+oy, radius, 0, Math.PI*2);
+        ctx.fill();
+    }
+}
+
+async function runForensic() {
+    if(!currentImg) return alert("이미지를 업로드해주세요.");
+    const scanLine = document.getElementById('scanLine');
+    const metaBox = document.getElementById('metadataBox');
+    scanLine.style.display = 'block';
+    metaBox.style.display = 'block';
+    
+    const logs = ["> EXIF DATA LOADING...", "> DETECTED EDIT TOOL: SNOW / MEITU", "> ANALYZING FACIAL WARPING...", "> CALIBRATING PIXEL SATURATION...", "> COMPLETE."];
+    metaBox.innerHTML = "";
+    for(let log of logs) {
+        metaBox.innerHTML += `<div>${log}</div>`;
+        await new Promise(r => setTimeout(r, 300));
+    }
+    scanLine.style.display = 'none';
+    drawForensicHighlights();
+    
+    // 4개 항목 동시 애니메이션 시작
+    startMultiAnimation('imageResults', ['색감 보정률', '얼굴 윤곽 변형', '필터 밀도', '연출 인위성']);
+}
+
+function runAccountMining() {
+    if(!document.getElementById('username').value) return alert("아이디를 입력하세요.");
+    startMultiAnimation('accountResults', ['언어적 과장', '광고성 빈도', '과시적 키워드', '현실 괴리감']);
+    setTimeout(updateReport, 2500);
+}
+
+// 4개 항목이 동시에 오르는 핵심 로직
+function startMultiAnimation(targetId, labels) {
+    const container = document.getElementById(targetId);
+    container.innerHTML = "";
+    const items = [];
+    let avg = 0;
+
+    // 1. 먼저 모든 구조를 DOM에 삽입
+    labels.forEach((label, i) => {
+        const targetVal = Math.floor(Math.random() * 50) + 45;
+        avg += targetVal;
+
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = `
+            <div class="label-group"><span>${label}</span><span class="pct-num">0%</span></div>
+            <div class="bar-bg"><div class="bar-fill"></div></div>
+        `;
+        container.appendChild(wrapper);
+
+        items.push({
+            numEl: wrapper.querySelector('.pct-num'),
+            fillEl: wrapper.querySelector('.bar-fill'),
+            target: targetVal,
+            current: 0
+        });
+    });
+
+    window.lastScore = Math.floor(avg / labels.length);
+
+    // 2. 모든 항목을 동시에 카운팅하는 통합 타이머
+    const startTime = performance.now();
+    const duration = 2000; // 2초 동안 진행
+
+    function update() {
+        const now = performance.now();
+        const progress = Math.min((now - startTime) / duration, 1);
+        
+        // 부드러운 감속 효과 (EaseOutQuart)
+        const ease = 1 - Math.pow(1 - progress, 4);
+
+        items.forEach(item => {
+            const currentVal = Math.floor(ease * item.target);
+            item.numEl.innerText = `${currentVal}%`;
+            item.fillEl.style.width = `${currentVal}%`;
+        });
+
+        if (progress < 1) requestAnimationFrame(update);
+    }
+    requestAnimationFrame(update);
+}
+
+function updateReport() {
+    const score = window.lastScore || 0;
+    const scoreArea = document.getElementById('finalScoreArea');
+    const presBox = document.getElementById('prescriptionBox');
+    
+    switchTab('report', document.querySelectorAll('.tab-btn')[2]);
+
+    scoreArea.innerHTML = `
+        <div style="font-size: 56px; font-weight: 800; color: var(--primary); letter-spacing:-2px;">${score}점</div>
+        <p style="font-weight: 700; font-size: 17px; margin-top:5px;">종합 현실 괴리 지수</p>
+    `;
+    
+    presBox.style.display = 'block';
+    presBox.innerHTML = score > 70 ? 
+        `<strong>⚠️ 고위험 계정:</strong> 이 게시물은 고도로 설계된 연출물입니다. 당신의 일상과 비교하지 마세요.` :
+        `<strong>⚖️ 주의 계정:</strong> 편집된 일상이 포함되어 있습니다. 가벼운 자극으로만 수용하세요.`;
+}
+</script>
+</body>
+</html>
